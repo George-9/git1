@@ -1,67 +1,35 @@
 package main
 
-// import (
-// 	f "fmt"
-// 	"os"
-// )
+import (
+	f "fmt"
+	h "net/http"
+	"os"
+	"time"
+)
 
-// func main() {
+type Person struct {
+	name, messege string
+	age           int
+}
 
-// 	path := "app.html"
+func (p *Person) addPersonToFile() {
+	date, _ := time.Now().UTC().MarshalText()
+	os.WriteFile(p.name, []byte(p.messege+" "+string(date)), 0600)
+	f.Printf("%s %s", "saved", p.name)
+}
 
-// 	var _, err = os.Stat(path)
+func handler(resp h.ResponseWriter, req *h.Request) {
+	f.Fprintln(resp, "hello"+req.URL.Path[1:], req.URL.Path[1:])
+}
 
-// 	if err != nil {
-// 		var file, err = os.Create(path)
-// 		if err != nil {
-// 			return
-// 		}
-// 		defer file.Close()
-// 		f.Println("file closed")
-// 	} else {
-// 		os.Remove(path)
-// 		var file, err = os.Create(path)
-// 		if err != nil {
-// 			return
-// 		}
-// 		defer file.Close()
-// 		f.Println("file closed")
-// 	}
-// 	fileToWrite, err := os.OpenFile(path, os.O_RDWR, 0644)
-// 	if err != nil {
-// 		return
-// 	}
-// 	defer fileToWrite.Close()
+func main() {
+	p := Person{
+		name:    "George",
+		messege: "Hi George.",
+		age:     21,
+	}
 
-// 	_, err = fileToWrite.WriteString(`<!DOCTYPE html>
-// 	<html lang="en">
-// 	<head>
-// 		<meta charset="UTF-8">
-// 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-// 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-// 		<title>Document</title>
-// 	</head>
-// 	<body>
-// 		<p>hi, number one</p>
-// 		<p>hi, number one</p>
-// 		<p>hi, number one</p>
-// 		<p>hi, number one</p>
-// 	</body>
-// 	</html>`)
-
-// 	err = fileToWrite.Sync()
-// 	if err != nil {
-// 		return
-// 	}
-// 	f.Println("done")
-
-// 	fileC, err := os.OpenFile(path, os.O_RDWR, 0644)
-// 	options := make([]byte, 1024)
-// 	data, err := fileC.Read(options)
-
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	f.Println(string(rune(data)))
-// }
+	p.addPersonToFile()
+	h.HandleFunc("/", handler)
+	h.ListenAndServe(":8000", nil)
+}
